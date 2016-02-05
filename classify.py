@@ -10,6 +10,10 @@ from collections import defaultdict
 import pprint
 from nltk.corpus import stopwords
 
+
+
+
+
 with open('vocab.txt') as data_file:    
 	vocab_list = json.load(data_file)
 
@@ -58,18 +62,6 @@ for n in range(0,3):
 	
 			if n == 2:
 				autos_vocab_dict[w] += 1
-
-
-		
-#		for w in docs:		
-#			if n > 0 and n < 546:
-#				politics_vocab_dict[w] += 1
-#		
-#			if  n > 546 and n < 1130:
-#				graphics_vocab_dict[w] += 1
-#	
-#			if n > 1130:
-#				autos_vocab_dict[w] += 1
  		
 #print 'p',politics_vocab_dict['andy'],'auto',autos_vocab_dict['andy']
 #pprint.pprint(graphics_vocab_dict)		
@@ -140,11 +132,7 @@ for index,dlist in enumerate(cat_docslist):
 		for lword in filtered_words:
 			if len(lword) < 3:
         			filtered_words.remove(lword)
-#		str1 = ' '.join(filtered_words)
-#		tokens = nltk.word_tokenize(str1)
-#		print 'tokens',tokens
-		#word_list = re.findall(r"[\w']+", tokens)
-		#print 'word list',word_list
+
 		#print 'filtered words',filtered_words
 		
 		likelihood = [0,0,0] # politics = 0 , graphics = 1, autos = 2
@@ -182,5 +170,5 @@ for i in range(len(y_predict)):
 		count = count + 1
 print 'accuracy', float(count)/ len(y_predict)
 					
-#			
+			
 

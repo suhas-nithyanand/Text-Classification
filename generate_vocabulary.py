@@ -8,119 +8,104 @@ import nltk
 import numpy as np
 import pickle
 import simplejson
-#nltk.download('punkt')
-categories =[]
-categories_doc_count =[]
-d = 0
-documents_count = 0
 
-cat_docslist = []
-k = 0
-rootDir = '/home/suhas/ucf/2ndsem/nlp/1st_assign/workspace/train'
-dirnamelist = []
-for dirName, subdirList, fileList in os.walk(rootDir):
 
-	if len(subdirList) >0:
-		categories = subdirList
-		
-	if len(subdirList) == 0:
-		documents_count = len(fileList)
-		categories_doc_count.append(documents_count)
-	
-	if len(subdirList) ==0:
-		cat_docslist.append(fileList)
-		dirnamelist.append(dirName)
-		
+from functions import get_filenames
+from functions import get_clean_tokens
 
-print 'categories:',categories
-#print 'categories count:',categories_doc_count
-print 'category docs list',cat_docslist
-counter = 0
+train_categories =[]
+train_categories_doc_count =[]
+train_documents_count = 0
+train_cat_docslist = []
 
-global_dict = {}
-doc_name_list = []
+
+train_rootdir = '/home/suhas/ucf/2ndsem/nlp/1st_assign/workspace/train'
+train_categories ,train_categories_doc_count,train_cat_docslist = get_filenames(train_rootdir)
+
+
+test_rootdir = '/home/suhas/ucf/2ndsem/nlp/1st_assign/workspace/test'
+test_categories ,test_categories_doc_count,test_cat_docslist = get_filenames(test_rootdir)
+
+
+#category_wcount_dict = {}
+train_category_docs = []
+train_total_docs = []
+train_category_wcount = []
 vocab_list =[]
-vocab_list =[]
-words_docs = []
-category_docs = []
 
-category_wcount_dict = {}
-
-category_word_count = 0
-
-total_docs = []
+vocab_list,training_docs,train_total_docs,train_category_wcount = get_clean_tokens(train_cat_docslist,train_rootdir,train_categories)
+test_vocab_list,test_docs,test_total_docs,test_category_wcount = get_clean_tokens(test_cat_docslist,test_rootdir,test_categories)
 
 
-category_wcount = []
-for index,dlist in enumerate(cat_docslist):
-	print '\nindex:',index, 'value',dlist
-	category_word_count = 0
-	total_docs_cat = 0
-	words_docs = []
-	for d in dlist:
-		total_docs_cat = len(dlist) 
-		print '\ndocument:',d
-		f=open('{0}/{1}/{2}'.format(rootDir,categories[index],d),'r')
+politics_vocab_dict = defaultdict(int)
+graphics_vocab_dict = defaultdict(int)
+autos_vocab_dict = defaultdict(int)
+for x in vocab_list:
+	politics_vocab_dict[x] = 0
+	graphics_vocab_dict[x] = 0
+	autos_vocab_dict[x] = 0
+
+for n in range(0,3):
+	for docs in training_docs[n]:
+		#print n,'doc len',len(training_docs[n])
+		for w in docs:		
+			if n == 0:
+				politics_vocab_dict[w] += 1
 		
-		wlist = f.read()
-		wlist = re.sub('[^A-Za-z]+', ' ', wlist)
-		wlist = re.sub(r'\b\w{1,2}\b', '', wlist)
-		wlist = re.sub(r'\w*\d\w*', '', wlist).strip()
-		word_list = re.findall(r"[\w']+", wlist)
-		tokens = [token.lower() for token in word_list]
-		filtered_words = [word for word in tokens if word not in stopwords.words('english')]
-		for lword in filtered_words:
-			if len(lword) < 3:
-        			filtered_words.remove(lword)
-#		str1 = ' '.join(filtered_words)
-#		tokens = nltk.word_tokenize(str1)
-#		print 'tokens',tokens
-		#word_list = re.findall(r"[\w']+", tokens)
-		#print 'word list',word_list
-		#print 'filtered words',filtered_words
-
-		category_word_count += len(filtered_words) 
-
-		for uword in filtered_words:
-			if uword not in vocab_list:
-				vocab_list.append(uword)
+			if  n == 1:
+				graphics_vocab_dict[w] += 1
 	
-		words_docs.append(filtered_words)
-	total_docs.append(total_docs_cat)
-	category_docs.append(words_docs)
-	category_wcount_dict[categories[index]] = category_word_count
-	category_wcount.append(category_word_count)
-
-print 'len of vocab list', len(vocab_list)
-print 'category docs', category_docs
-#np.savetxt('vocab_list', vocab_list, delimiter=' ')
-#pickle.dump(vocab_list, 'vocab_list.txt')
-#outfile.write("\n".join(vocab_list))
-#f = open('vocab.txt', 'w')
-#simplejson.dump(vocab_list, f)
-#f.close()
-# 
-#f = open('training_docs.txt', 'w')
-#simplejson.dump(category_docs, f)
-#f.close()		
-
-with open('total_docs.txt', 'w') as doutfile:
-    json.dump(total_docs, doutfile)
-
-with open('vocab.txt', 'w') as outfile:
-    json.dump(vocab_list, outfile)
-
-with open('training_docs.txt', 'w') as toutfile:
-    json.dump(category_docs, toutfile)
-
-with open('category_wcount.txt', 'w') as coutfile:
-    json.dump(category_wcount, coutfile)
+			if n == 2:
+				autos_vocab_dict[w] += 1
 	
-#		for uword in filtered_words:
-#			if uword not in global_dict:
-#				global_dict[uword] = 1
-#			else:
-#				global_dict[uword] +=1
 
-#print 'global_dict',global_dict	
+''' Prior calculation'''
+
+prior = np.zeros(3)
+for i in range(3):
+	prior[i] = float(train_total_docs[i])/sum(train_total_docs)
+
+ground_y = []
+y_predict = []
+
+for n in range(0,3):	
+	for docs in test_docs[n]:
+		ground_y.append(n)
+		#print n,'doc len',len(training_docs[n])
+		likelihood = [0,0,0] # politics = 0 , graphics = 1, autos = 2
+		for fw in docs:
+
+			if politics_vocab_dict[fw] != 0:
+				#print '\n val',politics_vocab_dict[fw], 'wcount', category_wcount[index]
+				likelihood[0] +=  np.log(float(politics_vocab_dict[fw]) + 1/(train_category_wcount[n] + len(vocab_list)))
+		
+			if graphics_vocab_dict[fw] != 0:
+				likelihood[1] +=  np.log(float(graphics_vocab_dict[fw]) + 1/(train_category_wcount[n] + len(vocab_list)))
+
+			if autos_vocab_dict[fw] != 0:
+				likelihood[2] +=  np.log(float(autos_vocab_dict[fw])+ 1/(train_category_wcount[n] + len(vocab_list)))
+		
+
+		'''allocating document to category'''
+		posterior = [0,0,0]
+		for j in range(3):
+			#print '\nj',j,'likelihood',likelihood[j]
+			#print '\nprior',prior
+			posterior[j] = float(likelihood[j] + np.log(prior[j]) )
+		
+		print '\nground truth',n,'likelihood',likelihood 
+		#print '\nprior',prior
+		print 'prediction',posterior,'decision',posterior.index(max(posterior))
+		y_predict.append(posterior.index(max(posterior)))
+
+
+print 'y_predict', len(y_predict),'ground_y',len(ground_y)
+
+count = 0
+for i in range(len(y_predict)):
+	if y_predict[i] == ground_y[i]:
+		count = count + 1
+print 'accuracy', float(count)/ len(y_predict)
+					
+
 
