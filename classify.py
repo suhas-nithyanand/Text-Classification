@@ -8,10 +8,13 @@ import nltk
 import numpy as np
 import pickle
 import simplejson
-
+from sklearn.metrics import f1_score
 
 from functions import get_filenames
 from functions import get_clean_tokens
+from timeit import default_timer as timer
+
+start = timer() 
 
 train_categories =[]
 train_categories_doc_count =[]
@@ -32,6 +35,8 @@ train_total_docs = []
 train_category_wcount = []
 vocab_list =[]
 
+''' Tokenizing train and test documents '''
+
 vocab_list,training_docs,train_total_docs,train_category_wcount = get_clean_tokens(train_cat_docslist,train_rootdir,train_categories)
 test_vocab_list,test_docs,test_total_docs,test_category_wcount = get_clean_tokens(test_cat_docslist,test_rootdir,test_categories)
 
@@ -44,6 +49,8 @@ for x in vocab_list:
 	graphics_vocab_dict[x] = 0
 	autos_vocab_dict[x] = 0
 
+
+''' Building training vectors '''
 for n in range(0,3):
 	for docs in training_docs[n]:
 		for w in docs:		
@@ -66,6 +73,10 @@ for i in range(3):
 ground_y = []
 y_predict = []
 
+
+
+''' Calucalating likelihood for each test document '''
+
 for n in range(0,3):	
 	for docs in test_docs[n]:
 		ground_y.append(n)
@@ -87,15 +98,25 @@ for n in range(0,3):
 		for j in range(3):
 			posterior[j] = float(likelihood[j] + np.log(prior[j]) )
 		
-		print '\nground truth',n,'prediction',posterior.index(max(posterior))
+		print '\nTesting : ground truth',n,'prediction',posterior.index(max(posterior))
 		y_predict.append(posterior.index(max(posterior)))
 
 
+''' Calucalating total accuracy '''
 count = 0
 for i in range(len(y_predict)):
 	if y_predict[i] == ground_y[i]:
 		count = count + 1
-print 'accuracy', float(count)/ len(y_predict)
+
+F1_score = f1_score(ground_y, y_predict, average='macro')  
+
+end = timer()
+print '\nRunning Time :',(end - start) 
+
+print '\n Vocabulary Size', len(vocab_list)
+
+print '\n Overall Accuracy =', float(count)/ len(y_predict)
+print '\n F1 score', F1_score
 					
 
 

@@ -8,8 +8,9 @@ import nltk
 import numpy as np
 import pickle
 import simplejson
+from nltk.stem.wordnet import WordNetLemmatizer
 
-
+''' Returns the filenames in the given directory'''
 
 def get_filenames(rootDir):
 
@@ -35,6 +36,8 @@ def get_filenames(rootDir):
 	return categories ,categories_doc_count,cat_docslist
 
 
+''' Reads all the documents in the given directory and preprocess the text data and generate tokens'''
+
 def get_clean_tokens(cat_docslist,rootDir,categories):
 
 	category_wcount_dict = {}
@@ -44,11 +47,11 @@ def get_clean_tokens(cat_docslist,rootDir,categories):
 	category_docs = []
 
 	for index,dlist in enumerate(cat_docslist):
-		print '\n Reading document',dlist
 		category_word_count = 0
 		total_docs_cat = 0
 		words_docs = []
 		for d in dlist:
+			print '\n Reading document',d
 			total_docs_cat = len(dlist) 
 			f=open('{0}/{1}/{2}'.format(rootDir,categories[index],d),'r')
 		
@@ -59,6 +62,7 @@ def get_clean_tokens(cat_docslist,rootDir,categories):
 			word_list = re.findall(r"[\w']+", wlist)
 			tokens = [token.lower() for token in word_list]
 			filtered_words = [word for word in tokens if word not in stopwords.words('english')]
+			
 			for lword in filtered_words:
 				if len(lword) < 3:
 					filtered_words.remove(lword)
