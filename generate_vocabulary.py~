@@ -68,8 +68,7 @@ for i in range(3):
 ground_y = []
 y_predict = []
 
-for n in range(0,3):
-	
+for n in range(0,3):	
 	for docs in test_docs[n]:
 		ground_y.append(n)
 		#print n,'doc len',len(training_docs[n])

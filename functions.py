@@ -35,7 +35,7 @@ def get_filenames(rootDir):
 	return categories ,categories_doc_count,cat_docslist
 
 
-def get_clean_tokens(train_cat_docslist,rootDir,categories):
+def get_clean_tokens(cat_docslist,rootDir,categories):
 
 	category_wcount_dict = {}
 	total_docs = []
@@ -43,14 +43,13 @@ def get_clean_tokens(train_cat_docslist,rootDir,categories):
 	vocab_list = []
 	category_docs = []
 
-	for index,dlist in enumerate(train_cat_docslist):
-		print '\nindex:',index, 'value',dlist
+	for index,dlist in enumerate(cat_docslist):
+		print '\n Reading document',dlist
 		category_word_count = 0
 		total_docs_cat = 0
 		words_docs = []
 		for d in dlist:
 			total_docs_cat = len(dlist) 
-			print '\ndocument:',d
 			f=open('{0}/{1}/{2}'.format(rootDir,categories[index],d),'r')
 		
 			wlist = f.read()
