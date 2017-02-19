@@ -22,11 +22,11 @@ train_documents_count = 0
 train_cat_docslist = []
 
 
-train_rootdir = '/home/suhas/ucf/2ndsem/nlp/1st_assign/workspace/train'
+train_rootdir = 'train'
 train_categories ,train_categories_doc_count,train_cat_docslist = get_filenames(train_rootdir)
 
 
-test_rootdir = '/home/suhas/ucf/2ndsem/nlp/1st_assign/workspace/test'
+test_rootdir = 'test'
 test_categories ,test_categories_doc_count,test_cat_docslist = get_filenames(test_rootdir)
 
 
